@@ -1,0 +1,75 @@
+%%***************************************************************************************
+%% file         sfcn_timein_get.tlc
+%% brief        Target Language Compiler file that contains the code generation specifics
+%%              for an S-function with the same name.
+%%
+%%---------------------------------------------------------------------------------------
+%%                          C O P Y R I G H T
+%%---------------------------------------------------------------------------------------
+%%  Copyright 2019 (c) by HAN Automotive     http://www.han.nl     All rights reserved
+%%
+%%---------------------------------------------------------------------------------------
+%%                            L I C E N S E
+%%---------------------------------------------------------------------------------------
+%% Permission is hereby granted, free of charge, to any person obtaining a copy of this
+%% software and associated documentation files (the "Software"), to deal in the Software
+%% without restriction, including without limitation the rights to use, copy, modify, merge,
+%% publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+%% persons to whom the Software is furnished to do so, subject to the following conditions:
+%%
+%% The above copyright notice and this permission notice shall be included in all copies or
+%% substantial portions of the Software.
+%%
+%% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+%% INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+%% PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+%% FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+%% OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+%% DEALINGS IN THE SOFTWARE.
+%%
+%%***************************************************************************************
+%implements  sfcn_timein_get "C"
+
+%% add required include files
+%<LibAddToCommonIncludes("timein.h")>
+
+
+%% Function: Start ==========================================================
+%%
+%% Purpose:
+%%      Code generation for initialization
+%%
+%function Start(block, system) Output
+  %%
+  /* configure the timer input pin */
+  TimeinConfigure(%<block.RTWdata.pin>);
+  TimeinConfigureZeroHzTimeout(%<block.RTWdata.pin>, %<block.RTWdata.zeroHzTimeoutMs>);
+  %%
+%endfunction
+
+%% Function: Output ==========================================================
+%%
+%% Purpose:
+%%      Code generation for signal output
+%%
+%function Outputs(block, system) Output
+	%%
+    /* read timer input related information */
+    %<LibBlockOutputSignal(0, "", "", 0)> = TimeinGetFrequency(%<block.RTWdata.pin>);
+    %<LibBlockOutputSignal(1, "", "", 0)> = TimeinGetDutyCycle(%<block.RTWdata.pin>);
+    %<LibBlockOutputSignal(2, "", "", 0)> = TimeinGetEdgeCounter(%<block.RTWdata.pin>);
+    %<LibBlockOutputSignal(3, "", "", 0)> = TimeinGetLastEdgeState(%<block.RTWdata.pin>);
+    %<LibBlockOutputSignal(4, "", "", 0)> = TimeinGetLastEdgeCount(%<block.RTWdata.pin>);
+    %<LibBlockOutputSignal(5, "", "", 0)> = TimeinGetFreeRunningCounter(%<block.RTWdata.pin>);
+    %<LibBlockOutputSignal(6, "", "", 0)> = TimeinIsZeroHzDetected(%<block.RTWdata.pin>);
+  %%
+%endfunction
+
+
+
+%%******************************* end of sfcn_timein_get.tlc ****************************
+
+
+
+
+

@@ -1,0 +1,77 @@
+%%***************************************************************************************
+%% file         sfcn_base_sample_time.tlc
+%% brief        Target Language Compiler file that contains the code generation specifics
+%%              for an S-function with the same name.
+%%
+%%---------------------------------------------------------------------------------------
+%%                          C O P Y R I G H T
+%%---------------------------------------------------------------------------------------
+%%  Copyright 2019 (c) by HAN Automotive     http://www.han.nl     All rights reserved
+%%
+%%---------------------------------------------------------------------------------------
+%%                            L I C E N S E
+%%---------------------------------------------------------------------------------------
+%% Permission is hereby granted, free of charge, to any person obtaining a copy of this
+%% software and associated documentation files (the "Software"), to deal in the Software
+%% without restriction, including without limitation the rights to use, copy, modify, merge,
+%% publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+%% persons to whom the Software is furnished to do so, subject to the following conditions:
+%%
+%% The above copyright notice and this permission notice shall be included in all copies or
+%% substantial portions of the Software.
+%%
+%% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+%% INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+%% PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+%% FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+%% OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+%% DEALINGS IN THE SOFTWARE.
+%%
+%%***************************************************************************************
+%implements  sfcn_base_sample_time "C"
+
+%% add required include files
+%<LibAddToCommonIncludes("app.h")>
+%<LibAddToCommonIncludes("SYS_config.h")>
+%<LibAddToCommonIncludes("os.h")>
+%<LibAddToCommonIncludes("anin.h")>
+
+
+%% Function: Start ==========================================================
+%%
+%% Purpose:
+%%      Code generation for initialization
+%%
+%function Start(block, system) Output
+  %%
+  /* configure the stack size for the task that executes the model */
+  AppCtrlTaskSetStackSize((configMINIMAL_STACK_SIZE*sizeof(portBASE_TYPE)) + %<block.RTWdata.extraStack>);
+  /* configure the sample time of the model in microseconds */
+  AppCtrlTaskSetPeriod(%<block.RTWdata.baseSampleTime>);
+  /* Run the ADC conversions ten times faster than the Simulink model */
+  ADCconversionTaskSetPeriod(%<block.RTWdata.baseSampleTime>/10);
+
+  
+  %% Write AppCtrlTaskTiming in milliseconds in SYS_config.h for global use
+  %assign AppCtrlTaskTiming = (%<block.RTWdata.baseSampleTime>/1000)
+  %assign AppCtrlTaskTimingUs = (%<block.RTWdata.baseSampleTime>)
+  %if (CAST("Number",%<AppCtrlTaskTiming>) < 1)
+  %assign AppCtrlTaskTiming = 1
+  %endif
+  
+  %openfile buf = "SYS_config.h", "a"
+  /* add define with Application control task timing */
+  #define APP_CTRL_TASK_TIMING %<AppCtrlTaskTiming>
+  #define APP_CTRL_TASK_TIMING_US %<AppCtrlTaskTimingUs>
+  %closefile buf
+  
+%endfunction
+
+
+
+%%******************************* end of sfcn_base_sample_time.tlc **********************
+
+
+
+
+

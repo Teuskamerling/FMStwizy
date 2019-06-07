@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>HANcoder STM32 Target User Manual</title>
+</head>
+
+<body style="background-color: rgb(255, 255, 255);">
+
+<font color="#000099" size="+3">File Logger Signal</font><br>
+<p>Block to configure the signal to be logged by the File Logger module.</p>
+
+<p><font color="#000099" size="+1"><b>Description</b></font></p>
+
+<p>The 'File Logger Signal' block configures the input signal of the block to be logged by the File Logger 
+Module. This means that the value of the input signal will be sampled by the File Logger Module
+and written to the log-file on the SD-card.
+</p>
+
+<p><font color="#000099" size="+1"><b>Remarks</b></font></p>
+
+<ul>
+    <li>The File Logger Close block must be present and called explicitly to stop logging, otherwise no
+    file will be written to the SD-card. Ideally, this block is called during software shutdown for example
+    when the ignition signal goes low in automotive applications. An external trigger can also be used such
+    as a button press event or CAN message reception.
+</ul>
+
+<font color="#000099" size="+1"><b>Parameters</b></font><br>
+
+<dl>
+<dt><b>Signal Name</b>
+    <dd>This name will be used in the first line of the log file, the first row of the column holding the data
+	belonging to the signal. 'enter name' is the default and is used to check if a name has been added, an error
+	during the build process will occur when no name has been entered, also when the field has been left blank.
+<dt><b>Signal Data Type</b>
+    <dd>Specify the data type of the blocks input signal. It is strongly recommended not to use the floating
+	point data types: single or double. It is better to rescale the data so it fits in an integer.
+<dt><b>Define ALL column numbers manually</b>
+    <dd>When this box is not ticked the Simulink model will be scanned and the signals will be added in the order
+	in which Simulink finds the File Logger Signal blocks, this can seem random. 
+	When the checkbox is ticked an extra field will appear which gives control over the column position of the 
+	signals in the log file. If this box is ticked in any of the File Logger Signal blocks it has to be done in ALL 
+	File Logger Signal blocks!
+<dt><b>Column number</b>
+    <dd>This is an index that basically specifies in what column this signal will appear in the
+    actual log-file. This parameter can have a value of 1,2,3.... The user has to make sure the numbers are 
+	consecutive and there are no gaps i.e.: 1,2,4,5 is <b>not</b> allowed and will cause an error during the build procedure.
+	The first column in the log-file is always the timestamp. If the Signal column number is 1, then the block's input 
+	signal value will be logged into the first column next to the timestamp.
+</dl>
+
+
+</body>
+</html>

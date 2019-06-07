@@ -1,0 +1,69 @@
+%%***************************************************************************************
+%% file         sfcn_servo.tlc
+%% brief        Target Language Compiler file that contains the code generation specifics
+%%              for an S-function with the same name.
+%%
+%%---------------------------------------------------------------------------------------
+%%                          C O P Y R I G H T
+%%---------------------------------------------------------------------------------------
+%%  Copyright 2019 (c) by HAN Automotive     http://www.han.nl     All rights reserved
+%%
+%%---------------------------------------------------------------------------------------
+%%                            L I C E N S E
+%%---------------------------------------------------------------------------------------
+%% This file is part of the HANcoder Target Matlab/Simulink Blockset environment. For the
+%% licensing terms, please contact HAN Automotive.
+%%
+%% This software has been carefully tested, but is not guaranteed for any particular
+%% purpose. HAN Automotive does not offer any warranties and does not guarantee the 
+%% accuracy, adequacy, or completeness of the software and is not responsible for any 
+%% errors or omissions or the results obtained from use of the software.
+%%
+%%***************************************************************************************
+%implements  sfcn_servo "C"
+
+%% add required include files
+%<LibAddToCommonIncludes("servo.h")>
+
+%% Function: BlockTypeSetup ==========================================================
+%%
+%% Purpose:
+%%      Code generation for configuration
+%%
+%function BlockTypeSetup(block, system) void
+
+%endfunction
+
+
+%% Function: Start ==========================================================
+%%
+%% Purpose:
+%%      Code generation for initialization
+%%
+%function Start(block, system) Output
+  %%
+  /* Configure the driver */
+  ServoInit(%<block.RTWdata.pinID>, %<block.RTWdata.lowerLimit>, %<block.RTWdata.upperLimit>);
+  %%
+%endfunction
+
+%% Function: Update ==========================================================
+%%
+%% Purpose:
+%%      Code generation for signal input
+%%
+%function Update(block, system) Output
+	%%
+  /* Set the new duty cycle */
+  ServoUpdate(%<block.RTWdata.pinID>, %<LibBlockInputSignal(0, "", "", 0)>);
+  %%
+%endfunction
+
+
+
+%%******************************* end of sfcn_servo.tlc ************************
+
+
+
+
+

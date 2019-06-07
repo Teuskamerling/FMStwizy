@@ -1,0 +1,136 @@
+%%***************************************************************************************
+%% file         sfcn_udp_server_receive.tlc
+%% brief        Target Language Compiler file that contains the code generation specifics
+%%              for an S-function with the same name.
+%%
+%%---------------------------------------------------------------------------------------
+%%                          C O P Y R I G H T
+%%---------------------------------------------------------------------------------------
+%%  Copyright 2019 (c) by HAN Automotive     http://www.han.nl     All rights reserved
+%%
+%%---------------------------------------------------------------------------------------
+%%                            L I C E N S E
+%%---------------------------------------------------------------------------------------
+%% Permission is hereby granted, free of charge, to any person obtaining a copy of this
+%% software and associated documentation files (the "Software"), to deal in the Software
+%% without restriction, including without limitation the rights to use, copy, modify, merge,
+%% publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+%% persons to whom the Software is furnished to do so, subject to the following conditions:
+%%
+%% The above copyright notice and this permission notice shall be included in all copies or
+%% substantial portions of the Software.
+%%
+%% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+%% INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+%% PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+%% FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+%% OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+%% DEALINGS IN THE SOFTWARE.
+%%
+%%***************************************************************************************
+%implements  sfcn_udp_server_receive "C"
+
+
+%% add required include files
+%<LibAddToCommonIncludes("udp_server.h")>
+
+
+%% Function: BlockTypeSetup ==========================================================
+%%
+%% Purpose:
+%%      Code generation for configuration
+%%
+%function BlockTypeSetup(block, system) void
+  %% get the name of the model's source file.
+  %assign srcFile = LibGetModelDotCFile()
+
+  %% create a buffer that can be used for preparing the data received by the UDP 
+  %% server to the outputs of the Simulink block. This is needed to be able to
+  %% perform byte swapping. 
+  %%
+  %% the total supported elements by this block is 32 and the largest data type for
+  %% an element is 32-bit (4 bytes). the preparation buffer therefore needs to be 
+  %% 32*4=128 bytes in size.
+  %<LibSetSourceFileSection(srcFile, "Declarations", "static uint8_t udpReceiveBuffer[128];\n")>
+  
+%endfunction
+
+
+%% Function: Output ==========================================================
+%%
+%% Purpose:
+%%      Code generation for signal output
+%%
+%function Outputs(block, system) Output
+  %%
+	%%
+    %% Get the used data type
+    %assign dataTypeNumber = LibGetDataTypeStorageIdFromId(CAST("Number",block.RTWdata.dataType) + 1)
+    
+    %% Read the data from the UDP server's internal buffer this block's preparation buffer
+    if (UdpServerGetRxData(%<block.RTWdata.dataLength>, %<block.RTWdata.startIdx>, &udpReceiveBuffer[0]) == TRUE)
+    {
+      %% Copy the data to the block's outputs (with possible byte swap)
+      %foreach elementIdx = block.RTWdata.outputNumber
+        %% int8, uint8 and boolean are all 1 byte values so they can be directly copied to the
+        %% outputs without byte swapping
+        %if ISEQUAL(CAST("Number",block.RTWdata.dataType), 1) || ISEQUAL(CAST("Number",block.RTWdata.dataType), 2) || ISEQUAL(CAST("Number",block.RTWdata.dataType), 7)
+          %<LibBlockOutputSignal(elementIdx, "", "", 0)> = udpReceiveBuffer[%<elementIdx>];
+
+        %% int16 is a 2 byte values and need to be processed with the correct byteswapping
+        %elseif ISEQUAL(CAST("Number",block.RTWdata.dataType), 3)
+          %if ISEQUAL(CAST("Number",block.RTWdata.byteOrder), 1)
+            %<LibBlockOutputSignal(elementIdx, "", "", 0)> = (int16_t)((uint16_t)(udpReceiveBuffer[(%<elementIdx> * 2) + 0] << 8) | \
+                                                                                 (udpReceiveBuffer[(%<elementIdx> * 2) + 1]));
+          %else
+            %<LibBlockOutputSignal(elementIdx, "", "", 0)> = (int16_t)((uint16_t)(udpReceiveBuffer[(%<elementIdx> * 2) + 1] << 8) | \
+                                                                                 (udpReceiveBuffer[(%<elementIdx> * 2) + 0]));
+          %endif
+
+        %% uint16 is a 2 byte values and need to be processed with the correct byteswapping
+        %elseif ISEQUAL(CAST("Number",block.RTWdata.dataType), 4)
+          %if ISEQUAL(CAST("Number",block.RTWdata.byteOrder), 1)
+            %<LibBlockOutputSignal(elementIdx, "", "", 0)> = (uint16_t)((uint16_t)(udpReceiveBuffer[(%<elementIdx> * 2) + 0] << 8) | \
+                                                                                  (udpReceiveBuffer[(%<elementIdx> * 2) + 1]));
+          %else
+            %<LibBlockOutputSignal(elementIdx, "", "", 0)> = (uint16_t)((uint16_t)(udpReceiveBuffer[(%<elementIdx> * 2) + 1] << 8) | \
+                                                                                  (udpReceiveBuffer[(%<elementIdx> * 2) + 0]));
+          %endif
+        
+        %% int32 is a 4 byte values and need to be processed with the correct byteswapping
+        %elseif ISEQUAL(CAST("Number",block.RTWdata.dataType), 5)
+          %if ISEQUAL(CAST("Number",block.RTWdata.byteOrder), 1)
+            %<LibBlockOutputSignal(elementIdx, "", "", 0)> = (int32_t)((uint32_t)(udpReceiveBuffer[(%<elementIdx> * 4) + 0] << 24) | \
+                                                                       (uint32_t)(udpReceiveBuffer[(%<elementIdx> * 4) + 1] << 16) | \
+                                                                       (uint32_t)(udpReceiveBuffer[(%<elementIdx> * 4) + 2] <<  8) | \
+                                                                                 (udpReceiveBuffer[(%<elementIdx> * 4) + 3]));
+          %else
+            %<LibBlockOutputSignal(elementIdx, "", "", 0)> = (int32_t)((uint32_t)(udpReceiveBuffer[(%<elementIdx> * 4) + 3] << 24) | \
+                                                                       (uint32_t)(udpReceiveBuffer[(%<elementIdx> * 4) + 2] << 16) | \
+                                                                       (uint32_t)(udpReceiveBuffer[(%<elementIdx> * 4) + 1] <<  8) | \
+                                                                                 (udpReceiveBuffer[(%<elementIdx> * 4) + 0]));
+          %endif
+        
+        %% uint32 is a 4 byte values and need to be processed with the correct byteswapping
+        %elseif ISEQUAL(CAST("Number",block.RTWdata.dataType), 6)
+          %if ISEQUAL(CAST("Number",block.RTWdata.byteOrder), 1)
+            %<LibBlockOutputSignal(elementIdx, "", "", 0)> = (uint32_t)((uint32_t)(udpReceiveBuffer[(%<elementIdx> * 4) + 0] << 24) | \
+                                                                        (uint32_t)(udpReceiveBuffer[(%<elementIdx> * 4) + 1] << 16) | \
+                                                                        (uint32_t)(udpReceiveBuffer[(%<elementIdx> * 4) + 2] <<  8) | \
+                                                                                  (udpReceiveBuffer[(%<elementIdx> * 4) + 3]));
+          %else
+            %<LibBlockOutputSignal(elementIdx, "", "", 0)> = (uint32_t)((uint32_t)(udpReceiveBuffer[(%<elementIdx> * 4) + 3] << 24) | \
+                                                                        (uint32_t)(udpReceiveBuffer[(%<elementIdx> * 4) + 2] << 16) | \
+                                                                        (uint32_t)(udpReceiveBuffer[(%<elementIdx> * 4) + 1] <<  8) | \
+                                                                                  (udpReceiveBuffer[(%<elementIdx> * 4) + 0]));
+          %endif
+        %endif
+      %endforeach
+    }
+	%%
+%endfunction
+
+
+%%******************************* end of sfcn_udp_server_receive.tlc ********************
+
+

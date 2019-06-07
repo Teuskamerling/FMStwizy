@@ -1,0 +1,62 @@
+/************************************************************************************//**
+* \file         usbcom.h
+* \brief        USB virtual COM-port header file.
+* \internal
+*----------------------------------------------------------------------------------------
+*                          C O P Y R I G H T
+*----------------------------------------------------------------------------------------
+*  Copyright 2019 (c)  by HAN Automotive   http://www.han.nl        All rights reserved
+*
+*----------------------------------------------------------------------------------------
+*                            L I C E N S E
+*----------------------------------------------------------------------------------------
+* Permission is hereby granted, free of charge, to any person obtaining a copy of this 
+* software and associated documentation files (the "Software"), to deal in the Software
+* without restriction, including without limitation the rights to use, copy, modify, merge,
+* publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+* persons to whom the Software is furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all copies or
+* substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+* INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+* PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+* FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+* OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+* DEALINGS IN THE SOFTWARE.
+* \endinternal
+****************************************************************************************/
+#ifndef USBCOM_H
+#define USBCOM_H
+
+/****************************************************************************************
+* Include files
+****************************************************************************************/
+#include <stdint.h>                                   /* ANSI C types                  */
+
+
+/****************************************************************************************
+* Type definitions
+****************************************************************************************/
+/** \brief Function type for the data received callback handler. Note that when this
+ *         callback is used, it is called from ISR level.
+ */
+typedef void (* tUsbComCallbackDataReceived)(uint8_t *data, uint32_t len);
+
+
+/****************************************************************************************
+* Function prototypes
+****************************************************************************************/
+void UsbComInit(void);
+void UsbComTransmit(uint8_t *data, uint32_t len);
+void UsbComRegisterDataReceivedCallback(tUsbComCallbackDataReceived callbackPtr);
+void UsbComHandleReception(uint8_t *data, uint32_t len);
+void UsbComWakeUpIRQHandler(void);
+void UsbComIRQHandler(void);
+
+
+#endif /* USBCOM_H */
+/********************************* end of usbcom.h *************************************/
+
+

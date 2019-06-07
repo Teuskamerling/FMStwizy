@@ -1,0 +1,101 @@
+%%***************************************************************************************
+%% file         sfcn_controller_error_totalerrors.tlc
+%% brief        Target Language Compiler file that contains the code generation specifics
+%%              for an S-function with the same name.
+%%
+%%---------------------------------------------------------------------------------------
+%%                          C O P Y R I G H T
+%%---------------------------------------------------------------------------------------
+%%  Copyright 2019 (c) by HAN Automotive     http://www.han.nl     All rights reserved
+%%
+%%---------------------------------------------------------------------------------------
+%%                            L I C E N S E
+%%---------------------------------------------------------------------------------------
+%% Permission is hereby granted, free of charge, to any person obtaining a copy of this
+%% software and associated documentation files (the "Software"), to deal in the Software
+%% without restriction, including without limitation the rights to use, copy, modify, merge,
+%% publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+%% persons to whom the Software is furnished to do so, subject to the following conditions:
+%%
+%% The above copyright notice and this permission notice shall be included in all copies or
+%% substantial portions of the Software.
+%%
+%% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+%% INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+%% PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+%% FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+%% OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+%% DEALINGS IN THE SOFTWARE.
+%%
+%%***************************************************************************************
+%implements  sfcn_controller_error_totalerrors "C"
+
+%% add required include files
+%<LibAddToCommonIncludes("errorcodes.h")>
+
+%% Function: BlockTypeSetup ==========================================================
+%%
+%% Purpose:
+%%      Code generation for configuration
+%%
+%function BlockTypeSetup(block, system) void
+  %% get the name of the model's source file.
+  %assign srcFile = LibGetModelDotCFile()
+
+  %% create variables for storing data
+  %<LibSetSourceFileSection(srcFile, "Declarations", "static uint16_t errCodesNumErrors;\n")>
+  %<LibSetSourceFileSection(srcFile, "Declarations", "static tErrCodeData errCodesErrorBuf[8];\n")>
+  %<LibSetSourceFileSection(srcFile, "Declarations", "static uint8_t errCodesHighestSeverity;\n")>
+  %<LibSetSourceFileSection(srcFile, "Declarations", "static uint8_t errCodesTotalErrors;\n")>
+  %<LibSetSourceFileSection(srcFile, "Declarations", "static uint8_t errCodesX, errCodesY;\n")>
+%endfunction
+
+
+
+
+%% Function: Outputs ==========================================================
+%%
+%% Purpose:
+%%      Code generation for signal output
+%%
+%function Outputs(block, system) Output
+%%
+{
+      /* reset use variables */
+      errCodesTotalErrors = 0;
+      errCodesHighestSeverity = 0;
+      errCodesX = 0;
+      
+      /* loop through all possible errors, in groups of 8 */
+      do
+      {
+          %if ISEQUAL(CAST("Number",block.RTWdata.eeprom), 0)
+          /* Get 8 saved errors from RAM. */
+          errCodesNumErrors = ErrCodesGetActiveErrors(errCodesErrorBuf, errCodesX, 8); 
+          %else
+          /* Get 8 saved errors from EEPROM. */
+          errCodesNumErrors = ErrCodesGetSavedErrors(errCodesErrorBuf, errCodesX, 8); 
+          %endif
+          for (errCodesY = 0; errCodesY < errCodesNumErrors; errCodesY++)
+          {
+                /* set the current severity as highest if it is higher as the last highest severity */
+                if (errCodesHighestSeverity < errCodesErrorBuf[errCodesY].param) 
+                { 
+                    errCodesHighestSeverity = errCodesErrorBuf[errCodesY].param; 
+                }
+                errCodesTotalErrors++;
+          }
+          /* increment errCodesX for the next batch of 8 errors */
+          errCodesX += 8;
+      }
+      while (errCodesNumErrors > 0);
+      
+      /* set the number of errors */
+      %<LibBlockOutputSignal(0, "", "", 0)> = errCodesTotalErrors; 
+      /* set the highest severity if needed */
+      %<LibBlockOutputSignal(1, "", "", 0)> = errCodesHighestSeverity; 
+}
+    %%
+%endfunction
+
+%%******************************* end of sfcn_controller_error_totalerrors.tlc **********

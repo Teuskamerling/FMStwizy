@@ -1,0 +1,80 @@
+%%***************************************************************************************
+%% file         sfcn_digital_out.tlc
+%% brief        Target Language Compiler file that contains the code generation specifics
+%%              for an S-function with the same name.
+%%
+%%---------------------------------------------------------------------------------------
+%%                          C O P Y R I G H T
+%%---------------------------------------------------------------------------------------
+%%  Copyright 2019 (c) by HAN Automotive     http://www.han.nl     All rights reserved
+%%
+%%---------------------------------------------------------------------------------------
+%%                            L I C E N S E
+%%---------------------------------------------------------------------------------------
+%% This file is part of the HANcoder Target Matlab/Simulink Blockset environment. For the
+%% licensing terms, please contact HAN Automotive.
+%%
+%% This software has been carefully tested, but is not guaranteed for any particular
+%% purpose. HAN Automotive does not offer any warranties and does not guarantee the 
+%% accuracy, adequacy, or completeness of the software and is not responsible for any 
+%% errors or omissions or the results obtained from use of the software.
+%%
+%%***************************************************************************************
+%implements  sfcn_signal_tower "C"
+
+%% add required include files
+%<LibAddToCommonIncludes("signaltower.h")>
+
+%% Function: Start ==========================================================
+%%
+%% Purpose:
+%%      Code generation for initialization
+%%
+%function Start(block, system) Output
+  %%
+  /* configure the driver */
+  signaltower_init(%<block.RTWdata.channel>);
+  %%
+%endfunction
+
+%% Function: Update ==========================================================
+%%
+%% Purpose:
+%%      Code generation for signal input
+%%
+%function Update(block, system) Output
+  %%
+  /* update the signal tower */
+  uint32_t layer3_grb = 0;
+  uint32_t layer2_grb = 0;
+  uint32_t layer1_grb = 0;
+  uint32_t layer0_grb = 0;
+
+  layer3_grb |= %<LibBlockInputSignal(0, "", "", 0)> << 8;
+  layer3_grb |= %<LibBlockInputSignal(1, "", "", 0)> << 16;
+  layer3_grb |= %<LibBlockInputSignal(2, "", "", 0)>;
+
+  layer2_grb |= %<LibBlockInputSignal(3, "", "", 0)> << 8;
+  layer2_grb |= %<LibBlockInputSignal(4, "", "", 0)> << 16;
+  layer2_grb |= %<LibBlockInputSignal(5, "", "", 0)>;
+
+  layer1_grb |= %<LibBlockInputSignal(6, "", "", 0)> << 8;
+  layer1_grb |= %<LibBlockInputSignal(7, "", "", 0)> << 16;
+  layer1_grb |= %<LibBlockInputSignal(8, "", "", 0)>;
+
+  layer0_grb |= %<LibBlockInputSignal(9, "", "", 0)> << 8;
+  layer0_grb |= %<LibBlockInputSignal(10, "", "", 0)> << 16;
+  layer0_grb |= %<LibBlockInputSignal(11, "", "", 0)>;
+
+  signaltower_write(layer0_grb, layer1_grb, layer2_grb, layer3_grb);
+  %%
+%endfunction
+
+
+
+%%******************************* end of sfcn_digital_out.tlc ***************************
+
+
+
+
+

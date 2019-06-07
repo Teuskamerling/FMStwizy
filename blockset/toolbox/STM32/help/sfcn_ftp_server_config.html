@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>HANcoder STM32 Target User Manual</title>
+</head>
+
+<body style="background-color: rgb(255, 255, 255);">
+
+<font color="#000099" size="+3">FTP server config</font><br>
+<p>Block to configure and initialize the FTP server</p>
+
+<p><font color="#000099" size="+1"><b>Description</b></font></p>
+
+<p>The FTP server config block initializes the FTP server and allows the user to set the desired
+username and password. Using the FTP server block it is possible to connect to the target using port
+21. After authentication the user can download or delete files located on the SD card. Other actions 
+are not possible yet.
+</p>
+<p>The FTP server is currently only compatible with the WinSCP FTP Client.
+</p>
+
+<p><font color="#000099" size="+1"><b>Remarks</b></font></p>
+
+<ul>
+    <li>Place the FAT32 formatted SD-card into the slot on the system before starting the software program.
+    <li>The FTP Server config block must be present otherwise the FTP server will not work. 
+	<li>When a file is being used by the file logger block, it will not be visible in the FTP server untill logging
+	is stopped by using the File Logger Close block.
+</ul>
+
+<font color="#000099" size="+1"><b>Parameters</b></font><br>
+
+<dl>
+<dt><b>Username</b>
+    <dd>Desired user name for authentication when logging in to the server.
+<dt><b>Password</b>
+    <dd>Desired password for authentication when logging in to the server.
+</dl>
+
+
+</body>
+</html>

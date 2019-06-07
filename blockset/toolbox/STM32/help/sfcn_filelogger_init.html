@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>HANcoder STM32 Target User Manual</title>
+</head>
+
+<body style="background-color: rgb(255, 255, 255);">
+
+<font color="#000099" size="+3">File Logger Init</font><br>
+<p>Block to initialize the File Logger module</p>
+
+<p><font color="#000099" size="+1"><b>Description</b></font></p>
+
+<p>The 'File Logger Init' block instructs the code generator to enable support for the 
+File Logger module. This module allows the logging of Simulink signals (at a fixed
+time interval) into a file that is written to the SD-card.
+</p>
+<p>All signals in the ASCII log-file are separated by a semicolon. This data format allows the 
+log-files to be opened by any tool that can read CSV files, such as Microsoft Excel.
+</p>
+
+<p><font color="#000099" size="+1"><b>Remarks</b></font></p>
+
+<ul>
+    <li>Place the FAT32 formatted SD-card into the slot on the system before starting the software program.
+    <li>The File Logger Close block must be present and called explicitly to stop logging, otherwise no
+    file will be written to the SD-card. Ideally, this block is called during software shutdown for example
+    when the ignition signal goes low in automotive applications. An external trigger can also be used such
+    as a button press event or CAN message reception.
+</ul>
+
+<font color="#000099" size="+1"><b>Parameters</b></font><br>
+
+<dl>
+<dt><b>Filename</b>
+    <dd>Name of the log-file, including file extension. It will be written to the root directory on the SD-card.
+		A 3-digit sequence number will be added to the log-file and automatically increment it
+        when a new logfile is created. So if the filename is specified as 'mylog.txt', then the first time the
+        software program is started, the log-file will be called 'mylog001.txt', the next time the software program
+        is started, it will be called 'mylog002.txt', etc.
+<dt><b>Logging interval (ms)</b>
+    <dd>This detemins the delta time as which the data signals are sampled and written to the log-file. Specify
+    the time in milliseconds. Note that a short logging interval will increase the CPU load. It is recommended
+    to specify a value >= 5ms.
+<dt><b>Maximum log file size</b>
+    <dd>With this setting you can indicate the maximum size of the log file in kilobytes. A new log file will be automatically created
+	when this size is reached. In case the file logger close block is not called only the last file will not be saved and the 
+	data will be lost. Depending on the CPU load it is possible that some data points will be missed between two log files.
+<dt><b>Automatically start logging</b>
+    <dd>Select if logging should automatically start after reset or wait until it is triggered by the trigger input.
+<dt><b>Use dot-character as decimal seperator (comma otherwise)</b>
+    <dd>After sampling data signals, the signal valus are converted to a string in order to be able to write them to
+    the log-file. This configurable instructs the File Logger module to use either a '.'-character or ','-character
+    as a decimal separator.
+</dl>
+
+
+
+
+<p><font color="#000099" size="+1"><b>Examples</b></font></p>
+
+<p>
+Given is the following configuration:
+<dl>
+<dt>Filename: 'mylog.txt'
+<dt>Logging interval (ms): 100
+<dt>Maximum log file size: 20
+<dt>Automatically start logging; No
+<dt>Use dot-character as decimal seperator (comma otherwise): No
+</dl>
+</p>
+<p>
+After running the software program, the log-file 'mylog001.txt' will appear on the SD-card with the following contents:
+</p>
+<pre>
+time;signalName1;signalName2
+0,100;1;100
+0,200;2;101
+0,300;3;102
+0,400;4;103
+0,500;5;104
+0,600;6;105
+0,700;7;106
+0,800;8;107
+0,900;9;108
+1,000;10;109
+1,100;11;110
+....etc....
+</pre>
+
+
+</body>
+</html>

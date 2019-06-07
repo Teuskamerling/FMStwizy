@@ -1,0 +1,76 @@
+%%***************************************************************************************
+%% file         sfcn_controller_error_searcherror.tlc
+%% brief        Target Language Compiler file that contains the code generation specifics
+%%              for an S-function with the same name.
+%%
+%%---------------------------------------------------------------------------------------
+%%                          C O P Y R I G H T
+%%---------------------------------------------------------------------------------------
+%%  Copyright 2019 (c) by HAN Automotive     http://www.han.nl     All rights reserved
+%%
+%%---------------------------------------------------------------------------------------
+%%                            L I C E N S E
+%%---------------------------------------------------------------------------------------
+%% Permission is hereby granted, free of charge, to any person obtaining a copy of this
+%% software and associated documentation files (the "Software"), to deal in the Software
+%% without restriction, including without limitation the rights to use, copy, modify, merge,
+%% publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+%% persons to whom the Software is furnished to do so, subject to the following conditions:
+%%
+%% The above copyright notice and this permission notice shall be included in all copies or
+%% substantial portions of the Software.
+%%
+%% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+%% INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+%% PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+%% FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+%% OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+%% DEALINGS IN THE SOFTWARE.
+%%
+%%***************************************************************************************
+%implements  sfcn_controller_error_searcherror "C"
+
+%% add required include files
+%<LibAddToCommonIncludes("errorcodes.h")>
+
+%% Function: BlockTypeSetup ==========================================================
+%%
+%% Purpose:
+%%      Code generation for configuration
+%%
+%function BlockTypeSetup(block, system) void
+  %% get the name of the model's source file.
+  %assign srcFile = LibGetModelDotCFile()
+
+  %% create a buffer that can be used for storing error data
+  %<LibSetSourceFileSection(srcFile, "Declarations", "static tErrCodeData errCodesSearchError;\n")>
+%endfunction
+
+
+%% Function: Outputs ==========================================================
+%%
+%% Purpose:
+%%      Code generation for signal output
+%%
+%function Outputs(block, system) Output
+%%
+{
+  %if ISEQUAL(CAST("Number",block.RTWdata.eeprom), 0)
+  if (ErrCodesSearchActiveError(%<LibBlockInputSignal(0, "", "", 0)>, %<LibBlockInputSignal(1, "", "", 0)>, &errCodesSearchError) == TRUE)
+  %else
+  if (ErrCodesSearchSavedError(%<LibBlockInputSignal(0, "", "", 0)>, %<LibBlockInputSignal(1, "", "", 0)>, &errCodesSearchError) == TRUE)
+  %endif
+  {
+    %<LibBlockOutputSignal(0, "", "", 0)> = errCodesSearchError.occurrence;
+    %<LibBlockOutputSignal(1, "", "", 0)> = errCodesSearchError.timestamp;
+  }
+  else
+  {
+    %<LibBlockOutputSignal(0, "", "", 0)> = 0;
+    %<LibBlockOutputSignal(1, "", "", 0)> = 0;
+  }
+}
+    %%
+%endfunction
+
+%%******************************* end of sfcn_controller_error_searcherror.tlc **********

@@ -1,0 +1,97 @@
+%%***************************************************************************************
+%% file         sfcn_can_receive.tlc
+%% brief        Target Language Compiler file that contains the code generation specifics
+%%              for an S-function with the same name.
+%%
+%%---------------------------------------------------------------------------------------
+%%                          C O P Y R I G H T
+%%---------------------------------------------------------------------------------------
+%%  Copyright 2019 (c) by HAN Automotive     http://www.han.nl     All rights reserved
+%%
+%%---------------------------------------------------------------------------------------
+%%                            L I C E N S E
+%%---------------------------------------------------------------------------------------
+%% Permission is hereby granted, free of charge, to any person obtaining a copy of this
+%% software and associated documentation files (the "Software"), to deal in the Software
+%% without restriction, including without limitation the rights to use, copy, modify, merge,
+%% publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+%% persons to whom the Software is furnished to do so, subject to the following conditions:
+%%
+%% The above copyright notice and this permission notice shall be included in all copies or
+%% substantial portions of the Software.
+%%
+%% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+%% INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+%% PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+%% FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+%% OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+%% DEALINGS IN THE SOFTWARE.
+%%
+%%***************************************************************************************
+%implements  sfcn_can_receive "C"
+
+
+%% add required include files
+%<LibAddToCommonIncludes("canio.h")>
+
+%% Function: BlockInstanceSetup ==========================================================
+%%
+%% Purpose:
+%%      Code generation for configuration
+%%
+%function BlockInstanceSetup(block, system) void
+  %% get the name of the model's source file.
+  %assign srcFile = LibGetModelDotCFile()
+
+  %% create a buffer that can be used for storing message data.
+  %<LibSetSourceFileSection(srcFile, "Declarations", "static tCanDataTypes canRxData_%<block.RTWdata.canBus>_%<LibBlockInputSignal(0, "", "", 0)>;\n")>
+  
+%endfunction
+
+
+%% Function: Start ==========================================================
+%%
+%% Purpose:
+%%      Code generation for initialization
+%%
+%function Start(block, system) Output
+  /* register a CAN storage buffer for the message with this ID */
+  CanIoCreateMessageReceivedStorage(%<block.RTWdata.canBus>, %<LibBlockInputSignal(0, "", "", 0)>);
+%endfunction
+
+
+%% Function: Outputs ==========================================================
+%%
+%% Purpose:
+%%      Code generation for signal output
+%%
+%function Outputs(block, system) Output
+  %% Get the used data type
+  %assign dataTypeNumber = LibGetDataTypeStorageIdFromId(CAST("Number",block.RTWdata.dataType) + 1)
+
+  /* read the message data and store the new parameter */
+  %<LibBlockOutputSignal(0 , "", "", 0)> = CanIoGetMessage(%<block.RTWdata.canBus>, %<LibBlockInputSignal(0, "", "", 0)>, NULL, &canRxData_%<block.RTWdata.canBus>_%<LibBlockInputSignal(0, "", "", 0)>.uint8_T_info[0], NULL);
+
+  /* process the message data */  
+  if (%<LibBlockOutputSignal(0 , "", "", 0)> > 0)
+  {
+    %% Read the data transmission block (with possible byte swap)
+    /* read the data */
+    %foreach counter = block.RTWdata.outputNumber
+      %if ISEQUAL(CAST("Number",block.RTWdata.byteOrder), 1) && CAST("Number",block.RTWdata.dataType) > 2
+        /* swap the data on request */
+        ByteSwap(canRxData_%<block.RTWdata.canBus>_%<LibBlockInputSignal(0, "", "", 0)>.%<LibGetDataTypeNameFromId(dataTypeNumber)>_info[%<counter>]);
+      %endif
+
+      %<LibBlockOutputSignal(counter + 1, "", "", 0)> = canRxData_%<block.RTWdata.canBus>_%<LibBlockInputSignal(0, "", "", 0)>.%<LibGetDataTypeNameFromId(dataTypeNumber)>_info[%<counter>];
+    %endforeach
+  }
+%endfunction
+
+
+%%******************************* end of sfcn_can_receive.tlc ***************************
+
+
+
+
+
