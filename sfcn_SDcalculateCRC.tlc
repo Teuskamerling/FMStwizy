@@ -1,0 +1,60 @@
+%implements  sfcn_SDcalculateCRC "C"
+
+%% Function: BlockTypeSetup ==========================================================
+%%
+%% Purpose:
+%%      Code generation for configuration
+%%
+%function BlockTypeSetup(block, system) void
+  
+%endfunction
+
+
+%% Function: Update ==========================================================
+%%
+%% Purpose:
+%%      Code generation for signal input
+%%
+%function Update(block, system) Output
+
+uint8_t crc = 0xFF;
+uint8_t i;
+
+ crc = crc ^ %<LibBlockInputSignal(1, "", "", 0)>;
+ for(i=0; i < 8; i++){ 
+  crc = (crc & 0x80)? (crc <<1) ^ 0x1D : (crc <<1); 
+ } 
+
+ crc = crc ^ %<LibBlockInputSignal(2, "", "", 0)>;
+ for(i=0; i < 8; i++){ 
+  crc = (crc & 0x80)? (crc <<1) ^ 0x1D : (crc <<1); 
+ } 
+
+ crc = crc ^ %<LibBlockInputSignal(3, "", "", 0)>;
+ for(i=0; i < 8; i++){ 
+  crc = (crc & 0x80)? (crc <<1) ^ 0x1D : (crc <<1); 
+ } 
+
+ crc = crc ^ %<LibBlockInputSignal(4, "", "", 0)>;
+ for(i=0; i < 8; i++){ 
+  crc = (crc & 0x80)? (crc <<1) ^ 0x1D : (crc <<1); 
+ } 
+
+ crc = crc ^ %<LibBlockInputSignal(5, "", "", 0)>;
+ for(i=0; i < 8; i++){ 
+  crc = (crc & 0x80)? (crc <<1) ^ 0x1D : (crc <<1); 
+ } 
+
+ crc = crc ^ %<LibBlockInputSignal(6, "", "", 0)>;
+ for(i=0; i < 8; i++){ 
+  crc = (crc & 0x80)? (crc <<1) ^ 0x1D : (crc <<1); 
+ } 
+
+ crc = crc ^ %<LibBlockInputSignal(7, "", "", 0)>;
+ for(i=0; i < 8; i++){ 
+  crc = (crc & 0x80)? (crc <<1) ^ 0x1D : (crc <<1); 
+ } 
+
+%<LibBlockOutputSignal(0, "", "", 0)> = crc;
+
+%endfunction
